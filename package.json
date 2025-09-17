@@ -13,7 +13,6 @@
     "@iconify-json/heroicons": "^1.2.2",
     "@nuxt/image": "^1.11.0",
     "@nuxt/ui": "^3.3.4",
-    "@vite-pwa/nuxt": "^1.0.4",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.44.5",
     "nuxt": "^4.1.2",
