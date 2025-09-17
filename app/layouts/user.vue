@@ -21,7 +21,7 @@
 
       <!-- Общая статистика -->
       <UButton
-        :class="buttonClass('/stats')"
+        :class="buttonClass('/stats/all')"
         color="blue"
         class="shadow-lg px-4 sm:px-6 py-2 sm:py-3 rounded-full flex items-center justify-center w-full sm:w-auto"
         @click="goTo('/stats')"
@@ -32,7 +32,7 @@
 
       <!-- Моя статистика -->
       <UButton
-        :class="buttonClass('/stats/all')"
+        :class="buttonClass('/stats')"
         color="blue"
         class="shadow-lg px-4 sm:px-6 py-2 sm:py-3 rounded-full flex items-center justify-center w-full sm:w-auto"
         @click="goTo('/stats/all')"
