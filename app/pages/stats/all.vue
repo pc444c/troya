@@ -24,31 +24,50 @@
       </div>
     </div>
 
+    <!-- ТОП-3 -->
+    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <div
+        v-for="(group, i) in topGroups"
+        :key="i"
+        class="bg-gray-800 rounded-xl p-4 border border-gray-700 shadow-md"
+      >
+        <h2 class="text-lg font-semibold text-center mb-4 text-gray-200">
+          Топ {{ i + 1 }} (месяц)
+        </h2>
+        <ul class="space-y-2">
+          <li
+            v-for="(user, idx) in group"
+            :key="user.id"
+            class="flex justify-between items-center px-3 py-2 rounded-lg bg-gray-700"
+          >
+            <div class="flex items-center gap-2">
+              <UIcon
+                :name="getMedalIcon(idx)"
+                :class="getMedalColor(idx)"
+                class="w-5 h-5"
+              />
+              <span class="font-medium">{{ user.login }}</span>
+            </div>
+            <span class="font-bold text-indigo-400">{{ user.month }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
     <!-- Таблица пользователей -->
     <div class="max-w-6xl mx-auto bg-gray-800 rounded-lg p-6 border border-gray-700 shadow-md overflow-x-auto">
       <table class="w-full min-w-[600px] border-collapse text-gray-100">
         <thead>
           <tr class="bg-gray-700 text-gray-200">
-            <th class="px-4 py-3 text-left rounded-tl-lg cursor-pointer" @click="sortBy('login')">
-              Пользователь
-              <span>{{ getSortIcon('login') }}</span>
-            </th>
-            <th class="px-4 py-3 text-center cursor-pointer" @click="sortBy('today')">
-              Сегодня {{ getSortIcon('today') }}
-            </th>
-            <th class="px-4 py-3 text-center cursor-pointer" @click="sortBy('week')">
-              Неделя {{ getSortIcon('week') }}
-            </th>
-            <th class="px-4 py-3 text-center cursor-pointer" @click="sortBy('month')">
-              Месяц {{ getSortIcon('month') }}
-            </th>
-            <th class="px-4 py-3 text-center rounded-tr-lg cursor-pointer" @click="sortBy('total')">
-              Всего {{ getSortIcon('total') }}
-            </th>
+            <th class="px-4 py-3 text-left">Пользователь</th>
+            <th class="px-4 py-3 text-center">Сегодня</th>
+            <th class="px-4 py-3 text-center">Неделя</th>
+            <th class="px-4 py-3 text-center">Месяц</th>
+            <th class="px-4 py-3 text-center">Всего</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-700">
-          <tr v-for="user in sortedUsers" :key="user.id" class="hover:bg-gray-700 transition-colors">
+          <tr v-for="user in usersStats" :key="user.id" class="hover:bg-gray-700 transition-colors">
             <td class="px-4 py-3 font-medium">{{ user.login }}</td>
             <td class="px-4 py-3 text-center font-semibold text-blue-400">{{ user.today }}</td>
             <td class="px-4 py-3 text-center font-semibold text-green-400">{{ user.week }}</td>
@@ -101,10 +120,6 @@ type UserStats = {
 const usersStats = ref<UserStats[]>([])
 const totals = ref({ today: 0, week: 0, month: 0 })
 
-// Состояние сортировки
-const sortKey = ref<'login' | 'today' | 'week' | 'month' | 'total'>('total')
-const sortAsc = ref(false)
-
 const fetchStats = async () => {
   try {
     isLoading.value = true
@@ -127,7 +142,7 @@ const fetchStats = async () => {
       month: usersStats.value.reduce((acc, u) => acc + u.month, 0)
     }
   } catch (err: any) {
-    toast.add({ title: err.message || "Ошибка загрузки статистики", color: "red" })
+    toast.add({ title: err.message || "Ошибка загрузки статистики", color: "error" })
   } finally {
     isLoading.value = false
   }
@@ -135,31 +150,25 @@ const fetchStats = async () => {
 
 onMounted(fetchStats)
 
-// Сортировка
-const sortedUsers = computed(() => {
-  return [...usersStats.value].sort((a, b) => {
-    let res = 0
-    if (sortKey.value === 'login') {
-      res = a.login.localeCompare(b.login)
-    } else {
-      res = a[sortKey.value] - b[sortKey.value]
-    }
-    return sortAsc.value ? res : -res
-  })
+// ТОП-3 по месяцам
+const topGroups = computed(() => {
+  const sorted = [...usersStats.value].sort((a, b) => b.month - a.month)
+  return [0, 1, 2].map(i => sorted.slice(i * 3, i * 3 + 3))
 })
 
-const sortBy = (key: typeof sortKey.value) => {
-  if (sortKey.value === key) {
-    sortAsc.value = !sortAsc.value
-  } else {
-    sortKey.value = key
-    sortAsc.value = false
-  }
+// Иконки медалей
+const getMedalIcon = (idx: number) => {
+  if (idx === 0) return 'i-heroicons-trophy'
+  if (idx === 1) return 'i-heroicons-star'
+  if (idx === 2) return 'i-heroicons-fire'
+  return 'i-heroicons-user'
 }
 
-const getSortIcon = (key: typeof sortKey.value) => {
-  if (sortKey.value !== key) return '↕️'
-  return sortAsc.value ? '⬆️' : '⬇️'
+const getMedalColor = (idx: number) => {
+  if (idx === 0) return 'text-yellow-400'
+  if (idx === 1) return 'text-gray-300'
+  if (idx === 2) return 'text-orange-400'
+  return 'text-gray-400'
 }
 </script>
 
