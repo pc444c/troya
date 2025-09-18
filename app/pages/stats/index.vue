@@ -12,10 +12,7 @@
         <div class="flex items-center justify-center w-12 h-12 bg-blue-700 rounded-lg mb-4 mx-auto">
           <UIcon name="i-heroicons-calendar-days" class="w-6 h-6 text-white" />
         </div>
-       <div class="text-2xl font-bold text-white text-center mb-2">
-  {{ stats.today }}
-</div>
-
+        <div class="text-2xl font-bold text-white text-center mb-2">{{ stats.today }}</div>
         <div class="text-blue-400 text-center font-semibold">Сегодня</div>
         <div class="text-gray-400 text-sm text-center mt-1">кодов</div>
       </UCard>
@@ -25,8 +22,9 @@
           <UIcon name="i-heroicons-calendar" class="w-6 h-6 text-white" />
         </div>
         <div class="text-2xl font-bold text-white text-center mb-1">{{ stats.week }}</div>
-        <div class="text-green-400 text-center font-semibold">В среднем за неделю</div>
-        <div class="text-gray-400 text-sm text-center mt-1">кодов в день</div>
+        <div class="text-green-400 text-center font-semibold">За неделю</div>
+        <div class="text-gray-400 text-sm text-center mt-1">всего кодов</div>
+        <div class="text-xs text-gray-500 text-center mt-1">среднее: {{ stats.weekAvg.toFixed(1) }}/день</div>
       </UCard>
 
       <UCard class="p-6 bg-gray-800 border border-gray-700 shadow-md">
@@ -34,8 +32,9 @@
           <UIcon name="i-heroicons-calendar" class="w-6 h-6 text-white" />
         </div>
         <div class="text-2xl font-bold text-white text-center mb-1">{{ stats.month }}</div>
-        <div class="text-purple-400 text-center font-semibold">В среднем за месяц</div>
-        <div class="text-gray-400 text-sm text-center mt-1">кодов в день</div>
+        <div class="text-purple-400 text-center font-semibold">За месяц</div>
+        <div class="text-gray-400 text-sm text-center mt-1">всего кодов</div>
+        <div class="text-xs text-gray-500 text-center mt-1">среднее: {{ stats.monthAvg.toFixed(1) }}/день</div>
       </UCard>
     </div>
 
@@ -69,12 +68,7 @@
                   <span class="font-medium">{{ formatDate(row.date) }}</span>
                 </div>
               </td>
-              <td class="px-4 py-3">
-                <div class="flex items-center justify-between">
-                  <span class="font-semibold">{{ row.count }}</span>
-                  <span class="text-xs text-gray-400 ml-2">кодов</span>
-                </div>
-              </td>
+              <td class="px-4 py-3 font-semibold">{{ row.count }}</td>
               <td class="px-4 py-3">
                 <UModal :title="`Коды за ${formatDate(row.date)}`">
                   <UButton label="Открыть" color="neutral" variant="subtle" @click="openModal(row)" />
@@ -96,11 +90,9 @@
                             <td class="px-4 py-3">
                               <code class="font-mono px-2 py-1 rounded bg-gray-700 text-blue-400">{{ item.code }}</code>
                             </td>
-                            <td class="px-4 py-3">
-                              <div class="flex items-center">
-                                <UIcon name="i-heroicons-clock" class="w-4 h-4 text-green-400 mr-2" />
-                                <span class="text-green-300">{{ item.time }}</span>
-                              </div>
+                            <td class="px-4 py-3 flex items-center">
+                              <UIcon name="i-heroicons-clock" class="w-4 h-4 text-green-400 mr-2" />
+                              <span class="text-green-300">{{ item.time }}</span>
                             </td>
                           </tr>
                         </tbody>
@@ -124,7 +116,7 @@ import { useToast } from '#imports'
 definePageMeta({ layout: 'user' })
 
 const toast = useToast()
-const stats = ref({ today: 0, week: 0, month: 0 })
+const stats = ref({ today: 0, week: 0, month: 0, weekAvg: 0, monthAvg: 0 })
 const days = ref<any[]>([])
 const modalCodes = ref<{ code: string; time: string }[]>([])
 
@@ -135,13 +127,19 @@ onMounted(async () => {
   try {
     const res = await $fetch("/api/codes/stats")
     stats.value = {
-      today: res.averages.day,
-      week: res.averages.week,
-      month: res.averages.month
+      today: res.totals?.day ?? 0,
+      week: res.totals?.week ?? 0,
+      month: res.totals?.month ?? 0,
+      weekAvg: res.averages?.week ?? 0,
+      monthAvg: res.averages?.month ?? 0,
     }
-    days.value = res.dailyStats.map((d: any) => ({ date: d.date, count: d.count, codes: d.codes || [] }))
+    days.value = (res.dailyStats || []).map((d: any) => ({
+      date: d.date,
+      count: d.count,
+      codes: d.codes || []
+    }))
   } catch (err: any) {
-    toast.add({ title: err.message || "Ошибка загрузки статистики", color: "red", icon: "i-heroicons-exclamation-triangle" })
+    toast.add({ title: err.message || "Ошибка загрузки статистики", color: "red" })
   }
 })
 
