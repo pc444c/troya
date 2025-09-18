@@ -7,21 +7,35 @@
     </div>
 
     <!-- Карточки метрик -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-10">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-6">
       <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-md text-center">
         <div class="text-blue-400 text-2xl md:text-3xl font-bold">{{ totals.today }}</div>
         <p class="text-gray-400 mt-1">Всего за сегодня</p>
       </div>
-
       <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-md text-center">
         <div class="text-green-400 text-2xl md:text-3xl font-bold">{{ totals.week }}</div>
         <p class="text-gray-400 mt-1">Всего за неделю</p>
       </div>
-
       <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-md text-center">
         <div class="text-purple-400 text-2xl md:text-3xl font-bold">{{ totals.month }}</div>
         <p class="text-gray-400 mt-1">Всего за месяц</p>
       </div>
+    </div>
+
+    <!-- Переключатель периода для ТОП -->
+    <div class="max-w-6xl mx-auto mb-6 flex justify-center gap-2">
+      <UButton
+        v-for="tab in tabs"
+        :key="tab.value"
+        :variant="activeTab === tab.value ? 'solid' : 'outline'"
+        color="primary"
+        size="sm"
+        class="!rounded-xl flex items-center gap-1"
+        @click="activeTab = tab.value"
+      >
+        <UIcon :name="tab.icon" class="w-4 h-4"/>
+        {{ tab.label }}
+      </UButton>
     </div>
 
     <!-- ТОП-3 -->
@@ -32,7 +46,7 @@
         class="bg-gray-800 rounded-xl p-4 border border-gray-700 shadow-md"
       >
         <h2 class="text-lg font-semibold text-center mb-4 text-gray-200">
-          Топ {{ i + 1 }} (месяц)
+          Топ {{ i + 1 }} ({{ tabLabel }})
         </h2>
         <ul class="space-y-2">
           <li
@@ -48,7 +62,7 @@
               />
               <span class="font-medium">{{ user.login }}</span>
             </div>
-            <span class="font-bold text-indigo-400">{{ user.month }}</span>
+            <span class="font-bold text-indigo-400">{{ user[activeTab] }}</span>
           </li>
         </ul>
       </div>
@@ -59,15 +73,39 @@
       <table class="w-full min-w-[600px] border-collapse text-gray-100">
         <thead>
           <tr class="bg-gray-700 text-gray-200">
-            <th class="px-4 py-3 text-left">Пользователь</th>
-            <th class="px-4 py-3 text-center">Сегодня</th>
-            <th class="px-4 py-3 text-center">Неделя</th>
-            <th class="px-4 py-3 text-center">Месяц</th>
-            <th class="px-4 py-3 text-center">Всего</th>
+            <th
+              v-for="col in columns"
+              :key="col.key"
+              class="px-4 py-3 text-center cursor-pointer select-none"
+              :class="col.key === 'login' ? 'text-left' : ''"
+              @click="sortBy(col.key)"
+            >
+              <div class="flex items-center justify-center gap-1">
+                <span>{{ col.label }}</span>
+                <span v-if="sortKey === col.key">
+                  <UIcon
+                    v-if="sortAsc"
+                    name="i-heroicons-chevron-up"
+                    class="w-4 h-4 transition-transform duration-200 my-auto"
+                  />
+                  <UIcon
+                    v-else
+                    name="i-heroicons-chevron-down"
+                    class="w-4 h-4 transition-transform duration-200"
+                  />
+                </span>
+                <span v-else>
+                  <UIcon
+                    name="i-heroicons-chevron-up-down"
+                    class="w-4 h-4 opacity-30"
+                  />
+                </span>
+              </div>
+            </th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-700">
-          <tr v-for="user in usersStats" :key="user.id" class="hover:bg-gray-700 transition-colors">
+          <tr v-for="user in sortedUsers" :key="user.id" class="hover:bg-gray-700 transition-colors">
             <td class="px-4 py-3 font-medium">{{ user.login }}</td>
             <td class="px-4 py-3 text-center font-semibold text-blue-400">{{ user.today }}</td>
             <td class="px-4 py-3 text-center font-semibold text-green-400">{{ user.week }}</td>
@@ -107,6 +145,13 @@ definePageMeta({ layout: 'user' })
 
 const toast = useToast()
 const isLoading = ref(false)
+const activeTab = ref<'today' | 'week' | 'month'>('month')
+
+const tabs = [
+  { label: 'Сегодня', value: 'today', icon: 'i-heroicons-sun' },
+  { label: 'Неделя', value: 'week', icon: 'i-heroicons-calendar' },
+  { label: 'Месяц', value: 'month', icon: 'i-heroicons-clock' },
+]
 
 type UserStats = {
   id: number
@@ -135,7 +180,6 @@ const fetchStats = async () => {
       total: Number(u.total)
     }))
 
-    // Считаем суммарные значения
     totals.value = {
       today: usersStats.value.reduce((acc, u) => acc + u.today, 0),
       week: usersStats.value.reduce((acc, u) => acc + u.week, 0),
@@ -150,9 +194,44 @@ const fetchStats = async () => {
 
 onMounted(fetchStats)
 
-// ТОП-3 по месяцам
+const columns = [
+  { key: 'login', label: 'Пользователь' },
+  { key: 'today', label: 'Сегодня' },
+  { key: 'week', label: 'Неделя' },
+  { key: 'month', label: 'Месяц' },
+  { key: 'total', label: 'Всего' },
+]
+
+const sortKey = ref<'login' | 'today' | 'week' | 'month' | 'total'>('total')
+const sortAsc = ref(false)
+
+const sortBy = (key: typeof sortKey.value) => {
+  if (sortKey.value === key) sortAsc.value = !sortAsc.value
+  else { sortKey.value = key; sortAsc.value = true }
+}
+
+const sortedUsers = computed(() => {
+  return [...usersStats.value].sort((a, b) => {
+    if (sortKey.value === 'login') {
+      const res = a.login.localeCompare(b.login)
+      return sortAsc.value ? res : -res
+    } else {
+      const res = a[sortKey.value] - b[sortKey.value]
+      return sortAsc.value ? res : -res
+    }
+  })
+})
+
+const tabLabel = computed(() => {
+  if (activeTab.value === 'today') return 'день'
+  if (activeTab.value === 'week') return 'неделя'
+  return 'месяц'
+})
+
+// ТОП-3 по выбранному периоду
 const topGroups = computed(() => {
-  const sorted = [...usersStats.value].sort((a, b) => b.month - a.month)
+  const key = activeTab.value
+  const sorted = [...usersStats.value].sort((a, b) => b[key] - a[key])
   return [0, 1, 2].map(i => sorted.slice(i * 3, i * 3 + 3))
 })
 
@@ -174,22 +253,7 @@ const getMedalColor = (idx: number) => {
 
 <style scoped>
 tbody tr:hover {
-  background-color: #374151; /* gray-700 */
+  background-color: #374151;
   transition: background-color 0.2s;
-}
-
-::-webkit-scrollbar {
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #1f2937; /* gray-800 */
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb {
-  background: #3b82f6; /* blue-500 */
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #2563eb; /* blue-600 */
 }
 </style>

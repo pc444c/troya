@@ -24,7 +24,7 @@
             placeholder="Ваш логин"
             icon="i-heroicons-user"
             size="lg"
-            class="block backdrop-blur  overflow-hidden bg-white/20 border-white/30 text-white placeholder-gray-300"
+            class="block rounded-md  bg-white/20 border-white/30 text-white "
           />
         </UFormGroup>
 
@@ -36,7 +36,7 @@
             placeholder="Ваш пароль"
             icon="i-heroicons-key"
             size="lg"
-            class="block backdrop-blur overflow-hidden bg-white/20 border-white/30 text-white placeholder-gray-300"
+            class="block backdrop-blur rounded-md  bg-white/20 border-white/30 text-white "
           >
             <template #trailing>
               <UButton
@@ -93,26 +93,33 @@ const submitForm = async () => {
       title: "Заполните все поля",
       color: "secondary",
       icon: "i-heroicons-exclamation-triangle"
-    })
-    return
+    });
+    return;
   }
 
-  loading.value = true
+  loading.value = true;
   try {
     const data = await $fetch("/api/auth", {
       method: "POST",
       body: form.value
-    })
-    toast.add({ title: data.message, color: "primary", icon: "i-heroicons-check-circle" })
-    setTimeout(() => window.location.href = "/home", 800)
-  } catch (err: any) {
+    });
     toast.add({
-      title: err.message || "Ошибка входа",
+      title: data.message,
+      color: "primary",
+      icon: "i-heroicons-check-circle"
+    });
+    setTimeout(() => window.location.href = "/home", 800);
+  } catch (err: any) {
+    // Здесь показываем Toast с ошибкой из API
+    toast.add({
+      title: err.data?.statusMessage || "Ошибка входа",
       color: "error",
       icon: "i-heroicons-x-circle"
-    })
+    });
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
+
 </script>
+<style scoped></style>

@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "../db";
 import { users } from "../db/schema";
-import { setCookie } from "h3";
+import { setCookie, createError, readBody } from "h3";
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ login: string; password: string }>(event);
@@ -14,32 +14,33 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // "маскируем" пароль через Base64 (для теста)
+  // Для теста "хешируем" пароль через Base64
   const passwordHash = Buffer.from(password).toString("base64");
 
-  // ищем пользователя (берём первый элемент массива)
+  // Ищем пользователя
   const [user] = await db.select().from(users).where(eq(users.login, login));
 
   if (!user) {
-    // если пользователя нет — регистрируем
+    // Если пользователя нет — создаём
     const [newUser] = await db
       .insert(users)
-      .values({
-        login,
-        passwordHash,
-      })
+      .values({ login, passwordHash })
       .returning();
 
-    // сохраняем id пользователя в куки
+    // Сохраняем id пользователя в куки
     setCookie(event, "userId", String(newUser.id), {
       httpOnly: true,
       path: "/",
       maxAge: 60 * 60 * 24 * 7, // 7 дней
     });
 
-    return { message: "Пользователь создан", user: { login: newUser.login } };
+    return {
+      success: true,
+      message: "Пользователь создан",
+      user: { login: newUser.login, id: newUser.id },
+    };
   } else {
-    // если пользователь есть — проверяем пароль
+    // Если есть — проверяем пароль
     if (user.passwordHash !== passwordHash) {
       throw createError({
         statusCode: 401,
@@ -47,13 +48,17 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // сохраняем id пользователя в куки при входе
+    // Сохраняем куки при входе
     setCookie(event, "userId", String(user.id), {
       httpOnly: true,
       path: "/",
-      maxAge: 60 * 60 * 24 * 7,
+      maxAge: 60 * 60 * 24 * 7, // 7 дней
     });
 
-    return { message: "Вход успешен", user: { login: user.login } };
+    return {
+      success: true,
+      message: "Вход успешен",
+      user: { login: user.login, id: user.id },
+    };
   }
 });

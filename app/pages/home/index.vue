@@ -32,7 +32,7 @@
             @input="onInput"
             icon="i-heroicons-hashtag"
             size="lg"
-            class="backdrop-blur block bg-white/20 border-white/30 text-white placeholder-gray-300"
+            class="backdrop-blur block rounded-md bg-white/20 border-white/30 text-white placeholder-gray-300"
           />
         </UFormGroup>
 
