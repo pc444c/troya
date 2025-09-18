@@ -29,15 +29,26 @@
       <table class="w-full min-w-[600px] border-collapse text-gray-100">
         <thead>
           <tr class="bg-gray-700 text-gray-200">
-            <th class="px-4 py-3 text-left rounded-tl-lg">Пользователь</th>
-            <th class="px-4 py-3 text-center">Сегодня</th>
-            <th class="px-4 py-3 text-center">Неделя</th>
-            <th class="px-4 py-3 text-center">Месяц</th>
-            <th class="px-4 py-3 text-center rounded-tr-lg">Всего</th>
+            <th class="px-4 py-3 text-left rounded-tl-lg cursor-pointer" @click="sortBy('login')">
+              Пользователь
+              <span>{{ getSortIcon('login') }}</span>
+            </th>
+            <th class="px-4 py-3 text-center cursor-pointer" @click="sortBy('today')">
+              Сегодня {{ getSortIcon('today') }}
+            </th>
+            <th class="px-4 py-3 text-center cursor-pointer" @click="sortBy('week')">
+              Неделя {{ getSortIcon('week') }}
+            </th>
+            <th class="px-4 py-3 text-center cursor-pointer" @click="sortBy('month')">
+              Месяц {{ getSortIcon('month') }}
+            </th>
+            <th class="px-4 py-3 text-center rounded-tr-lg cursor-pointer" @click="sortBy('total')">
+              Всего {{ getSortIcon('total') }}
+            </th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-700">
-          <tr v-for="user in usersStats" :key="user.id" class="hover:bg-gray-700 transition-colors">
+          <tr v-for="user in sortedUsers" :key="user.id" class="hover:bg-gray-700 transition-colors">
             <td class="px-4 py-3 font-medium">{{ user.login }}</td>
             <td class="px-4 py-3 text-center font-semibold text-blue-400">{{ user.today }}</td>
             <td class="px-4 py-3 text-center font-semibold text-green-400">{{ user.week }}</td>
@@ -70,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useToast } from '#imports'
 
 definePageMeta({ layout: 'user' })
@@ -88,12 +99,11 @@ type UserStats = {
 }
 
 const usersStats = ref<UserStats[]>([])
+const totals = ref({ today: 0, week: 0, month: 0 })
 
-const totals = ref({
-  today: 0,
-  week: 0,
-  month: 0
-})
+// Состояние сортировки
+const sortKey = ref<'login' | 'today' | 'week' | 'month' | 'total'>('total')
+const sortAsc = ref(false)
 
 const fetchStats = async () => {
   try {
@@ -124,6 +134,33 @@ const fetchStats = async () => {
 }
 
 onMounted(fetchStats)
+
+// Сортировка
+const sortedUsers = computed(() => {
+  return [...usersStats.value].sort((a, b) => {
+    let res = 0
+    if (sortKey.value === 'login') {
+      res = a.login.localeCompare(b.login)
+    } else {
+      res = a[sortKey.value] - b[sortKey.value]
+    }
+    return sortAsc.value ? res : -res
+  })
+})
+
+const sortBy = (key: typeof sortKey.value) => {
+  if (sortKey.value === key) {
+    sortAsc.value = !sortAsc.value
+  } else {
+    sortKey.value = key
+    sortAsc.value = false
+  }
+}
+
+const getSortIcon = (key: typeof sortKey.value) => {
+  if (sortKey.value !== key) return '↕️'
+  return sortAsc.value ? '⬆️' : '⬇️'
+}
 </script>
 
 <style scoped>

@@ -1,7 +1,7 @@
 import { db } from "../../db";
 import { codes } from "../../db/schema";
 import { getCookie } from "h3";
-import { eq, gte, lt, and } from "drizzle-orm";
+import { eq, gte, lt, and, } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
   const userId = getCookie(event, "userId");
