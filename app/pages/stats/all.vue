@@ -5,7 +5,7 @@
       <h1 class="text-3xl md:text-4xl font-bold mb-2">Общая статистика пользователей</h1>
       <p class="text-gray-400 mt-2">Аналитика активности по дням, неделям и месяцам</p>
     </div>
-
+    
     <!-- Карточки метрик -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-6">
       <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-md text-center">
@@ -67,7 +67,18 @@
         </ul>
       </div>
     </div>
-
+    <div class="my-8 text-center">
+      <UButton
+        color="primary"
+        size="lg"
+        icon="i-heroicons-arrow-path"
+        class="!rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all"
+        :loading="isLoading"
+        @click="fetchStats"
+      >
+        Обновить статистику
+      </UButton>
+    </div>
     <!-- Таблица пользователей -->
     <div class="max-w-6xl mx-auto bg-gray-800 rounded-lg p-6 border border-gray-700 shadow-md overflow-x-auto">
       <table class="w-full min-w-[600px] border-collapse text-gray-100">
@@ -122,18 +133,7 @@
     </div>
 
     <!-- Кнопка обновления -->
-    <div class="mt-8 text-center">
-      <UButton
-        color="primary"
-        size="lg"
-        icon="i-heroicons-arrow-path"
-        class="!rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all"
-        :loading="isLoading"
-        @click="fetchStats"
-      >
-        Обновить статистику
-      </UButton>
-    </div>
+    
   </div>
 </template>
 
