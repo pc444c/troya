@@ -6,6 +6,24 @@
       <p class="text-gray-400 mt-2">Аналитика активности по дням, неделям и месяцам</p>
     </div>
 
+    <!-- Карточки метрик -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-10">
+      <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-md text-center">
+        <div class="text-blue-400 text-2xl md:text-3xl font-bold">{{ totals.today }}</div>
+        <p class="text-gray-400 mt-1">Всего за сегодня</p>
+      </div>
+
+      <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-md text-center">
+        <div class="text-green-400 text-2xl md:text-3xl font-bold">{{ totals.week }}</div>
+        <p class="text-gray-400 mt-1">Всего за неделю</p>
+      </div>
+
+      <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-md text-center">
+        <div class="text-purple-400 text-2xl md:text-3xl font-bold">{{ totals.month }}</div>
+        <p class="text-gray-400 mt-1">Всего за месяц</p>
+      </div>
+    </div>
+
     <!-- Таблица пользователей -->
     <div class="max-w-6xl mx-auto bg-gray-800 rounded-lg p-6 border border-gray-700 shadow-md overflow-x-auto">
       <table class="w-full min-w-[600px] border-collapse text-gray-100">
@@ -71,6 +89,12 @@ type UserStats = {
 
 const usersStats = ref<UserStats[]>([])
 
+const totals = ref({
+  today: 0,
+  week: 0,
+  month: 0
+})
+
 const fetchStats = async () => {
   try {
     isLoading.value = true
@@ -85,6 +109,13 @@ const fetchStats = async () => {
       month: Number(u.month),
       total: Number(u.total)
     }))
+
+    // Считаем суммарные значения
+    totals.value = {
+      today: usersStats.value.reduce((acc, u) => acc + u.today, 0),
+      week: usersStats.value.reduce((acc, u) => acc + u.week, 0),
+      month: usersStats.value.reduce((acc, u) => acc + u.month, 0)
+    }
   } catch (err: any) {
     toast.add({ title: err.message || "Ошибка загрузки статистики", color: "red" })
   } finally {
@@ -96,13 +127,11 @@ onMounted(fetchStats)
 </script>
 
 <style scoped>
-/* Hover эффект для строк */
 tbody tr:hover {
   background-color: #374151; /* gray-700 */
   transition: background-color 0.2s;
 }
 
-/* Скроллбар для таблицы */
 ::-webkit-scrollbar {
   height: 6px;
 }

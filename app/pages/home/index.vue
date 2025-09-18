@@ -13,7 +13,7 @@
 
       <!-- Логин -->
       <div class="text-center mb-3 text-gray-200">
-        Вы вошли как: <span class="font-semibold text-white">{{ userLogin }}</span>
+        Вы вошли как: <span class="font-semibold text-xl text-white">{{ userLogin }}</span>
       </div>
 
       <!-- Статистика -->
@@ -27,7 +27,7 @@
         <UFormGroup label="Код подтверждения" name="code" required>
           <UInput
             v-model="code"
-            type="number"
+            type="text"
             placeholder="Введите код"
             icon="i-heroicons-hashtag"
             size="lg"
@@ -86,8 +86,8 @@ onMounted(async () => {
 })
 
 const submitCode = async () => {
-  if (!code.value) {
-    toast.add({ title: "Введите код", color: "yellow" })
+  if (!code.value || code.value.length < 4 || !/^\d+$/.test(code.value) || code.value.length > 6 ){
+    toast.add({ title: "Введите код коректно", color: "yellow" })
     return
   }
 

@@ -1,8 +1,7 @@
 import { db } from "../../../db"
 import { codes, users } from "../../../db/schema"
-import { gte, lte, eq } from "drizzle-orm"
+import { gte, lte, eq, and, sql } from "drizzle-orm"
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns"
-import { sql } from "drizzle-orm"
 
 export default defineEventHandler(async () => {
   try {
@@ -17,52 +16,64 @@ export default defineEventHandler(async () => {
     const allUsers = await db.select().from(users)
 
     // Считаем количество кодов для каждого пользователя
-    const stats = await Promise.all(allUsers.map(async (u) => {
-      // total
-      const [totalRow] = await db.select({ count: sql<number>`COUNT(*)` })
-        .from(codes)
-        .where(eq(codes.user_id, u.id))
-      const total = totalRow?.count ?? 0
+    const stats = await Promise.all(
+      allUsers.map(async (u) => {
+        // total
+        const [totalRow] = await db
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(codes)
+          .where(eq(codes.user_id, u.id))
+        const total = totalRow?.count ?? 0
 
-      // today
-      const [todayRow] = await db.select({ count: sql<number>`COUNT(*)` })
-        .from(codes)
-        .where(
-          eq(codes.user_id, u.id),
-          gte(codes.created_at, todayStart),
-          lte(codes.created_at, todayEnd)
-        )
-      const today = todayRow?.count ?? 0
+        // today
+        const [todayRow] = await db
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(codes)
+          .where(
+            and(
+              eq(codes.user_id, u.id),
+              gte(codes.created_at, todayStart),
+              lte(codes.created_at, todayEnd)
+            )
+          )
+        const today = todayRow?.count ?? 0
 
-      // week
-      const [weekRow] = await db.select({ count: sql<number>`COUNT(*)` })
-        .from(codes)
-        .where(
-          eq(codes.user_id, u.id),
-          gte(codes.created_at, weekStart),
-          lte(codes.created_at, weekEnd)
-        )
-      const week = weekRow?.count ?? 0
+        // week
+        const [weekRow] = await db
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(codes)
+          .where(
+            and(
+              eq(codes.user_id, u.id),
+              gte(codes.created_at, weekStart),
+              lte(codes.created_at, weekEnd)
+            )
+          )
+        const week = weekRow?.count ?? 0
 
-      // month
-      const [monthRow] = await db.select({ count: sql<number>`COUNT(*)` })
-        .from(codes)
-        .where(
-          eq(codes.user_id, u.id),
-          gte(codes.created_at, monthStart),
-          lte(codes.created_at, monthEnd)
-        )
-      const month = monthRow?.count ?? 0
+        // month
+        const [monthRow] = await db
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(codes)
+          .where(
+            and(
+              eq(codes.user_id, u.id),
+              gte(codes.created_at, monthStart),
+              lte(codes.created_at, monthEnd)
+            )
+          )
+        const month = monthRow?.count ?? 0
 
-      return {
-        id: u.id,
-        login: u.login,
-        today,
-        week,
-        month,
-        total
-      }
-    }))
+        return {
+          id: u.id,
+          login: u.login,
+          today,
+          week,
+          month,
+          total,
+        }
+      })
+    )
 
     // Сортируем по total по возрастанию
     stats.sort((a, b) => a.total - b.total)
