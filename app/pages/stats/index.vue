@@ -55,51 +55,101 @@
         <table class="w-full rounded-lg overflow-hidden text-gray-100">
           <thead class="bg-gray-700">
             <tr>
-              <th class="text-left font-semibold px-4 py-3">Дата</th>
-              <th class="text-left font-semibold px-4 py-3">Количество кодов</th>
-              <th class="text-left font-semibold px-4 py-3">Действия</th>
+              <th class="px-4 py-3 font-semibold text-left">Дата</th>
+              <th class="px-4 py-3 font-semibold text-left">Количество кодов</th>
+              <th class="px-4 py-3 font-semibold text-left">Действия</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-700">
             <tr v-for="(row, index) in days" :key="index" class="hover:bg-gray-700 transition-colors">
-              <td class="px-4 py-3">
-                <div class="flex items-center">
-                  <UIcon name="i-heroicons-calendar" class="w-4 h-4 text-blue-400 mr-2" />
-                  <span class="font-medium">{{ formatDate(row.date) }}</span>
-                </div>
+              <td class="px-4 py-3 flex items-center">
+                <UIcon name="i-heroicons-calendar" class="w-4 h-4 text-blue-400 mr-2" />
+                <span class="font-medium">{{ formatDate(row.date) }}</span>
               </td>
               <td class="px-4 py-3 font-semibold">{{ row.count }}</td>
               <td class="px-4 py-3">
-                <UModal :title="`Коды за ${formatDate(row.date)}`">
-                  <UButton label="Открыть" color="neutral" variant="subtle" @click="openModal(row)" />
-                  <template #body>
-                    <div v-if="modalCodes.length === 0" class="text-center py-8">
-                      <UIcon name="i-heroicons-document-text" class="w-12 h-12 text-gray-500 mx-auto mb-4" />
-                      <p class="text-gray-300">Нет кодов за этот день</p>
-                    </div>
-                    <div v-else class="max-h-96 overflow-y-auto">
-                      <table class="w-full text-left">
-                        <thead class="bg-gray-700">
-                          <tr>
-                            <th class="px-4 py-3 font-semibold">Код</th>
-                            <th class="px-4 py-3 font-semibold">Время</th>
-                          </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-700">
-                          <tr v-for="(item, idx) in modalCodes" :key="idx">
-                            <td class="px-4 py-3">
-                              <code class="font-mono px-2 py-1 rounded bg-gray-700 text-blue-400">{{ item.code }}</code>
-                            </td>
-                            <td class="px-4 py-3 flex items-center">
-                              <UIcon name="i-heroicons-clock" class="w-4 h-4 text-green-400 mr-2" />
-                              <span class="text-green-300">{{ item.time }}</span>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </template>
-                </UModal>
+              <UModal :title="`Коды за ${formatDate(row.date)}`">
+  <!-- Кнопка открытия модалки -->
+  <UButton 
+    label="Открыть" 
+    color="neutral"      
+    variant="solid"  
+    @click="openModal(row)" 
+  />
+  
+  <template #body>
+    <div v-if="modalCodes.length === 0" class="text-center py-8">
+      <UIcon name="i-heroicons-document-text" class="w-12 h-12 text-gray-500 mx-auto mb-4" />
+      <p class="text-gray-300">Нет кодов за этот день</p>
+    </div>
+
+    <div v-else class="max-h-[60vh] overflow-y-auto">
+      <div
+        v-for="(c, i) in modalCodes"
+        :key="c.id"
+        class="flex items-center gap-3 p-2 mb-2 bg-gray-800 rounded hover:bg-gray-700 transition-colors duration-200 w-full"
+      >
+        <!-- Код -->
+        <div class="flex-1">
+          <input
+            v-if="c.editing"
+            v-model="c.code"
+            @input="validateCode(c)"
+            class="bg-gray-700 px-2 py-1 border-2 border-blue-400 text-blue-400 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+          />
+          <span v-else class="font-mono px-2 py-1 rounded bg-gray-700 text-blue-400 w-full block transition-colors duration-200">
+            {{ c.code }}
+          </span>
+          <p v-if="c.error" class="text-xs text-red-400 mt-1">{{ c.error }}</p>
+        </div>
+
+        <!-- Время -->
+        <div class="w-28 flex items-center gap-1 justify-center">
+          <UIcon
+            name="i-heroicons-clock"
+            class="w-4 h-4 text-green-400 transition-transform duration-200 hover:scale-110"
+          />
+          <span class="text-green-300">{{ c.time }}</span>
+        </div>
+
+        <!-- Действия -->
+        <div class="flex items-center gap-2">
+          <!-- Редактировать / Сохранить -->
+          <UButton
+            v-if="!c.editing"
+            icon="i-heroicons-pencil"
+            size="sm"
+            color="secondary"        
+            variant="solid"    
+            class="transition-transform duration-200 hover:scale-110"
+            @click="c.editing = true"
+          />
+          <UButton
+            v-else
+            icon="i-heroicons-check"
+            size="sm"
+            color="primary"     
+            variant="solid"
+            :disabled="!!c.error"
+            class="transition-transform duration-200 hover:scale-110"
+            @click="saveCode(c)"
+          />
+
+          <!-- Удалить -->
+          <UButton
+            icon="i-heroicons-trash"
+            size="sm"
+            color="error"         
+            variant="solid"
+            class="transition-transform duration-200 hover:scale-110"
+            @click="confirmDeleteCode(c)"
+          />
+        </div>
+      </div>
+    </div>
+  </template>
+</UModal>
+
               </td>
             </tr>
           </tbody>
@@ -110,40 +160,74 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useToast } from '#imports'
+import { ref, onMounted } from "vue";
+import { useToast } from "#imports";
 
-definePageMeta({ layout: 'user' })
+definePageMeta({ layout: "user" });
 
-const toast = useToast()
-const stats = ref({ today: 0, week: 0, month: 0, weekAvg: 0, monthAvg: 0 })
-const days = ref<any[]>([])
-const modalCodes = ref<{ code: string; time: string }[]>([])
+const toast = useToast();
+const stats = ref({ today: 0, week: 0, month: 0, weekAvg: 0, monthAvg: 0 });
+const days = ref<any[]>([]);
+const modalCodes = ref<any[]>([]);
 
 const formatDate = (dateString: string) =>
-  new Date(dateString).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  new Date(dateString).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
 
 onMounted(async () => {
   try {
-    const res = await $fetch("/api/codes/stats")
+    const res = await $fetch("/api/codes/stats");
     stats.value = {
       today: res.totals?.day ?? 0,
       week: res.totals?.week ?? 0,
       month: res.totals?.month ?? 0,
       weekAvg: res.averages?.week ?? 0,
       monthAvg: res.averages?.month ?? 0,
-    }
+    };
     days.value = (res.dailyStats || []).map((d: any) => ({
       date: d.date,
       count: d.count,
-      codes: d.codes || []
-    }))
+      codes: d.codes || [],
+    }));
   } catch (err: any) {
-    toast.add({ title: err.message || "Ошибка загрузки статистики", color: "red" })
+    toast.add({ title: err.message || "Ошибка загрузки статистики", color: "red" });
   }
-})
+});
 
 const openModal = (row: any) => {
-  modalCodes.value = row.codes || []
-}
+  modalCodes.value = row.codes.map((c: any) => ({ ...c, editing: false, error: "" }));
+};
+
+// Валидация: только цифры и минимум 4 символа
+const validateCode = (c: any) => {
+  if (!/^\d{4,6}$/.test(c.code)) {
+    c.error = "Только цифры, от 4 до 6 символов";
+  } else {
+    c.error = "";
+  }
+};
+
+
+const saveCode = async (c: any) => {
+  try {
+    await $fetch(`/api/codes/${c.id}`, {
+      method: "PUT",
+      body: { code: c.code },
+    });
+    c.editing = false;
+    toast.add({ title: "Код обновлен", color: "green" });
+  } catch (err: any) {
+    toast.add({ title: err.message || "Ошибка обновления", color: "red" });
+  }
+};
+
+const confirmDeleteCode = async (c: any) => {
+  if (!confirm("Вы уверены, что хотите удалить этот код?")) return;
+  try {
+    await $fetch(`/api/codes/${c.id}`, { method: "DELETE" });
+    modalCodes.value = modalCodes.value.filter((x) => x.id !== c.id);
+    toast.add({ title: "Код удален", color: "green" });
+  } catch (err: any) {
+    toast.add({ title: err.message || "Ошибка удаления", color: "red" });
+  }
+};
 </script>
