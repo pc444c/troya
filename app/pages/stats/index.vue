@@ -186,10 +186,28 @@ onMounted(async () => {
       codes: d.codes || [],
     }));
   } catch (err: any) {
-    toast.add({ title: err.message || "Ошибка загрузки статистики", color: "red" });
+    toast.add({ title: err.message || "Ошибка загрузки статистики", color: "error" });
   }
 });
-
+const loadData = async() => {
+   try {
+    const res = await $fetch("/api/codes/stats");
+    stats.value = {
+      today: res.totals?.day ?? 0,
+      week: res.totals?.week ?? 0,
+      month: res.totals?.month ?? 0,
+      weekAvg: res.averages?.week ?? 0,
+      monthAvg: res.averages?.month ?? 0,
+    };
+    days.value = (res.dailyStats || []).map((d: any) => ({
+      date: d.date,
+      count: d.count,
+      codes: d.codes || [],
+    }));
+  } catch (err: any) {
+    toast.add({ title: err.message || "Ошибка загрузки статистики", color: "error" });
+  }
+}
 const openModal = (row: any) => {
   modalCodes.value = row.codes
     .filter((c: any) => c.id !== undefined)
@@ -206,29 +224,30 @@ const validateCode = (c: any) => {
 };
 
 const saveCode = async (c: any) => {
-  if (!c.id) return toast.add({ title: "Код не найден", color: "red" });
+  if (!c.id) return toast.add({ title: "Код не найден", color: "error" });
   try {
     await $fetch(`/api/codes/${c.id}`, {
       method: "PUT",
       body: { code: c.code },
     });
     c.editing = false;
-    toast.add({ title: "Код обновлен", color: "green" });
+    toast.add({ title: "Код обновлен", color: "primary" });
   } catch (err: any) {
-    toast.add({ title: err.message || "Ошибка обновления", color: "red" });
+    toast.add({ title: err.message || "Ошибка обновления", color: "error" });
   }
 };
 
 const confirmDeleteCode = async (c: any) => {
-  if (!c.id) return toast.add({ title: "Код не найден", color: "red" });
+  if (!c.id) return toast.add({ title: "Код не найден", color: "error" });
   if (!confirm("Вы уверены, что хотите удалить этот код?")) return;
 
   try {
     await $fetch(`/api/codes/${c.id}`, { method: "DELETE" });
     modalCodes.value = modalCodes.value.filter((x) => x.id !== c.id);
-    toast.add({ title: "Код удален", color: "green" });
+    toast.add({ title: "Код удален", color: "primary" });
+    loadData()
   } catch (err: any) {
-    toast.add({ title: err.message || "Ошибка удаления", color: "red" });
+    toast.add({ title: err.message || "Ошибка удаления", color: "error" });
   }
 };
 </script>

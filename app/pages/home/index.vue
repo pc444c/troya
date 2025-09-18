@@ -95,7 +95,7 @@ onMounted(async () => {
 
 const submitCode = async () => {
   if (!code.value || code.value.length < 4 || !/^\d+$/.test(code.value) || code.value.length > 6 ){
-    toast.add({ title: "Введите код коректно", color: "yellow" })
+    toast.add({ title: "Введите код коректно", color: "error" })
     return
   }
 
@@ -105,11 +105,11 @@ const submitCode = async () => {
       body: { code: code.value },
     })
 
-    toast.add({ title: res.message, color: "green" })
+    toast.add({ title: res.message, color: "primary" })
     code.value = ""
     await loadCounts()
   } catch (err: any) {
-    toast.add({ title: err.message || "Ошибка при сохранении кода", color: "red" })
+    toast.add({ title: err.message || "Ошибка при сохранении кода", color: "error" })
   }
 }
 </script>

@@ -41,7 +41,7 @@
             <template #trailing>
               <UButton
                 variant="ghost"
-                color="white"
+                color="neutral"
                 size="xs"
                 :icon="showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'"
                 @click="showPassword = !showPassword"
@@ -91,7 +91,7 @@ const submitForm = async () => {
   if (!form.value.login || !form.value.password) {
     toast.add({
       title: "Заполните все поля",
-      color: "yellow",
+      color: "secondary",
       icon: "i-heroicons-exclamation-triangle"
     })
     return
@@ -103,12 +103,12 @@ const submitForm = async () => {
       method: "POST",
       body: form.value
     })
-    toast.add({ title: data.message, color: "green", icon: "i-heroicons-check-circle" })
+    toast.add({ title: data.message, color: "primary", icon: "i-heroicons-check-circle" })
     setTimeout(() => window.location.href = "/home", 800)
   } catch (err: any) {
     toast.add({
       title: err.message || "Ошибка входа",
-      color: "red",
+      color: "error",
       icon: "i-heroicons-x-circle"
     })
   } finally {
