@@ -29,6 +29,7 @@
             v-model="code"
             type="text"
             placeholder="Введите код"
+            @input="onInput"
             icon="i-heroicons-hashtag"
             size="lg"
             class="backdrop-blur block bg-white/20 border-white/30 text-white placeholder-gray-300"
@@ -64,6 +65,13 @@ const userLogin = ref<string>("...")
 const code = ref("")
 const todayCount = ref(0)
 const totalCount = ref(0)
+const onInput = (e: Event) => {
+  const input = e.target as HTMLInputElement
+  // Убираем все, кроме цифр, и обрезаем до 6 символов
+  input.value = input.value.replace(/\D/g, "").slice(0, 6)
+  code.value = input.value
+}
+
 
 const loadCounts = async () => {
   try {
