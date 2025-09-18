@@ -2,7 +2,14 @@ import { db } from "../../../db";
 import { codes } from "../../../db/schema";
 import { getCookie, createError } from "h3";
 import { eq, desc } from "drizzle-orm";
-import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
+import {
+  startOfDay,
+  endOfDay,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+} from "date-fns";
 
 export default defineEventHandler(async (event) => {
   const userId = getCookie(event, "userId");
@@ -17,7 +24,11 @@ export default defineEventHandler(async (event) => {
     .orderBy(desc(codes.created_at));
 
   if (!allCodes.length) {
-    return { dailyStats: [], totals: { day: 0, week: 0, month: 0 }, averages: { week: 0, month: 0 } };
+    return {
+      dailyStats: [],
+      totals: { day: 0, week: 0, month: 0 },
+      averages: { week: 0, month: 0 },
+    };
   }
 
   // Группировка по дате
@@ -32,6 +43,7 @@ export default defineEventHandler(async (event) => {
     date,
     count: data.codes.length,
     codes: data.codes.map((c) => ({
+      id: c.id, // добавляем ID
       code: c.code,
       time: c.created_at.toISOString().split("T")[1].split(".")[0], // HH:MM:SS
     })),

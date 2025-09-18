@@ -68,88 +68,85 @@
               </td>
               <td class="px-4 py-3 font-semibold">{{ row.count }}</td>
               <td class="px-4 py-3">
-              <UModal :title="`Коды за ${formatDate(row.date)}`">
-  <!-- Кнопка открытия модалки -->
-  <UButton 
-    label="Открыть" 
-    color="neutral"      
-    variant="solid"  
-    @click="openModal(row)" 
-  />
-  
-  <template #body>
-    <div v-if="modalCodes.length === 0" class="text-center py-8">
-      <UIcon name="i-heroicons-document-text" class="w-12 h-12 text-gray-500 mx-auto mb-4" />
-      <p class="text-gray-300">Нет кодов за этот день</p>
-    </div>
+                <UModal :title="`Коды за ${formatDate(row.date)}`">
+                  <UButton 
+                    label="Открыть" 
+                    color="neutral"      
+                    variant="solid"  
+                    @click="openModal(row)" 
+                  />
+                  <template #body>
+                    <div v-if="modalCodes.length === 0" class="text-center py-8">
+                      <UIcon name="i-heroicons-document-text" class="w-12 h-12 text-gray-500 mx-auto mb-4" />
+                      <p class="text-gray-300">Нет кодов за этот день</p>
+                    </div>
 
-    <div v-else class="max-h-[60vh] overflow-y-auto">
-      <div
-        v-for="(c, i) in modalCodes"
-        :key="c.id"
-        class="flex items-center gap-3 p-2 mb-2 bg-gray-800 rounded hover:bg-gray-700 transition-colors duration-200 w-full"
-      >
-        <!-- Код -->
-        <div class="flex-1">
-          <input
-            v-if="c.editing"
-            v-model="c.code"
-            @input="validateCode(c)"
-            class="bg-gray-700 px-2 py-1 border-2 border-blue-400 text-blue-400 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-          />
-          <span v-else class="font-mono px-2 py-1 rounded bg-gray-700 text-blue-400 w-full block transition-colors duration-200">
-            {{ c.code }}
-          </span>
-          <p v-if="c.error" class="text-xs text-red-400 mt-1">{{ c.error }}</p>
-        </div>
+                    <div v-else class="max-h-[60vh] overflow-y-auto">
+                      <div
+                        v-for="(c, i) in modalCodes"
+                        :key="c.id"
+                        class="flex items-center gap-3 p-2 mb-2 bg-gray-800 rounded hover:bg-gray-700 transition-colors duration-200 w-full"
+                      >
+                        <!-- Код -->
+                        <div class="flex-1">
+                          <input
+                            v-if="c.editing"
+                            v-model="c.code"
+                            @input="validateCode(c)"
+                            class="bg-gray-700 px-2 py-1 border-2 border-blue-400 text-blue-400 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                          />
+                          <span v-else class="font-mono px-2 py-1 rounded bg-gray-700 text-blue-400 w-full block transition-colors duration-200">
+                            {{ c.code }}
+                          </span>
+                          <p v-if="c.error" class="text-xs text-red-400 mt-1">{{ c.error }}</p>
+                        </div>
 
-        <!-- Время -->
-        <div class="w-28 flex items-center gap-1 justify-center">
-          <UIcon
-            name="i-heroicons-clock"
-            class="w-4 h-4 text-green-400 transition-transform duration-200 hover:scale-110"
-          />
-          <span class="text-green-300">{{ c.time }}</span>
-        </div>
+                        <!-- Время -->
+                        <div class="w-28 flex items-center gap-1 justify-center">
+                          <UIcon
+                            name="i-heroicons-clock"
+                            class="w-4 h-4 text-green-400 transition-transform duration-200 hover:scale-110"
+                          />
+                          <span class="text-green-300">{{ c.time }}</span>
+                        </div>
 
-        <!-- Действия -->
-        <div class="flex items-center gap-2">
-          <!-- Редактировать / Сохранить -->
-          <UButton
-            v-if="!c.editing"
-            icon="i-heroicons-pencil"
-            size="sm"
-            color="secondary"        
-            variant="solid"    
-            class="transition-transform duration-200 hover:scale-110"
-            @click="c.editing = true"
-          />
-          <UButton
-            v-else
-            icon="i-heroicons-check"
-            size="sm"
-            color="primary"     
-            variant="solid"
-            :disabled="!!c.error"
-            class="transition-transform duration-200 hover:scale-110"
-            @click="saveCode(c)"
-          />
+                        <!-- Действия -->
+                        <div class="flex items-center gap-2">
+                          <!-- Редактировать / Сохранить -->
+                          <UButton
+                            v-if="!c.editing"
+                            icon="i-heroicons-pencil"
+                            size="sm"
+                            color="secondary"        
+                            variant="solid"    
+                            class="transition-transform duration-200 hover:scale-110"
+                            @click="c.editing = true"
+                          />
+                          <UButton
+                            v-else
+                            icon="i-heroicons-check"
+                            size="sm"
+                            color="primary"     
+                            variant="solid"
+                            :disabled="!!c.error"
+                            class="transition-transform duration-200 hover:scale-110"
+                            @click="saveCode(c)"
+                          />
 
-          <!-- Удалить -->
-          <UButton
-            icon="i-heroicons-trash"
-            size="sm"
-            color="error"         
-            variant="solid"
-            class="transition-transform duration-200 hover:scale-110"
-            @click="confirmDeleteCode(c)"
-          />
-        </div>
-      </div>
-    </div>
-  </template>
-</UModal>
-
+                          <!-- Удалить -->
+                          <UButton
+                            icon="i-heroicons-trash"
+                            size="sm"
+                            color="error"         
+                            variant="solid"
+                            class="transition-transform duration-200 hover:scale-110"
+                            @click="confirmDeleteCode(c)"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                </UModal>
               </td>
             </tr>
           </tbody>
@@ -194,7 +191,9 @@ onMounted(async () => {
 });
 
 const openModal = (row: any) => {
-  modalCodes.value = row.codes.map((c: any) => ({ ...c, editing: false, error: "" }));
+  modalCodes.value = row.codes
+    .filter((c: any) => c.id !== undefined)
+    .map((c: any) => ({ ...c, editing: false, error: "" }));
 };
 
 // Валидация: только цифры и минимум 4 символа
@@ -206,8 +205,8 @@ const validateCode = (c: any) => {
   }
 };
 
-
 const saveCode = async (c: any) => {
+  if (!c.id) return toast.add({ title: "Код не найден", color: "red" });
   try {
     await $fetch(`/api/codes/${c.id}`, {
       method: "PUT",
@@ -221,7 +220,9 @@ const saveCode = async (c: any) => {
 };
 
 const confirmDeleteCode = async (c: any) => {
+  if (!c.id) return toast.add({ title: "Код не найден", color: "red" });
   if (!confirm("Вы уверены, что хотите удалить этот код?")) return;
+
   try {
     await $fetch(`/api/codes/${c.id}`, { method: "DELETE" });
     modalCodes.value = modalCodes.value.filter((x) => x.id !== c.id);
