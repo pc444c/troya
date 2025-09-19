@@ -1,62 +1,42 @@
 <template>
   <div class="min-h-screen text-neutral-200 flex flex-col gap-4 relative">
     <!-- Header -->
-    <UHeader @click="BackHome" />
 
     <!-- Кнопка выхода -->
-    <ExitAccount />
+
 
     <!-- Кнопки навигации -->
-    <div class="flex flex-col sm:flex-row justify-end p-4 gap-3 sm:gap-4 flex-wrap">
-      <!-- Добавить код -->
-      <UButton
-        variant="soft"
-        color="gray"
-        size="lg"
-        class="rounded-full nav-btn"
-        :class="{ 'active-btn': route.path === '/home' }"
-        @click="goTo('/home')"
-      >
-        <UIcon name="i-heroicons-plus" class="w-5 h-5 mr-2" />
-        Добавить код
-      </UButton>
-      <!--  -->
-      <UButton
-        variant="soft"
-        color="gray"
-        size="lg"
-        class="rounded-full nav-btn"
-        :class="{ 'active-btn': route.path === '/home/profile' }"
-        @click="goTo('/home/profile')"
-      >
-        <UIcon name="i-heroicons-cog" class="w-5 h-5 mr-2" />
-        Настройки
-      </UButton>
-      <!-- Общая статистика -->
-      <UButton
-        variant="soft"
-        color="gray"
-        size="lg"
-        class="rounded-full nav-btn"
-        :class="{ 'active-btn': route.path === '/stats/all' }"
-        @click="goTo('/stats/all')"
-      >
-        <UIcon name="i-heroicons-chart-bar" class="w-5 h-5 mr-2" />
-        Общая статистика
-      </UButton>
+    <div class="flex flex-col sm:flex-row  justify-between p-4 gap-3 sm:gap-4 flex-wrap">
+      <div>
+        <ExitAccount />
+      </div>
+      <div class="flex flex-row gap-4">
+        <!-- Добавить код -->
+        <UButton variant="soft" color="gray" size="lg" class="rounded-full nav-btn"
+          :class="{ 'active-btn': route.path === '/home' }" @click="goTo('/home')">
+          <UIcon name="i-heroicons-plus" class="w-5 h-5 mr-2" />
+          Добавить код
+        </UButton>
+        <!--  -->
+        <UButton variant="soft" color="gray" size="lg" class="rounded-full nav-btn"
+          :class="{ 'active-btn': route.path === '/home/profile' }" @click="goTo('/home/profile')">
+          <UIcon name="i-heroicons-cog" class="w-5 h-5 mr-2" />
+          Настройки
+        </UButton>
+        <!-- Общая статистика -->
+        <UButton variant="soft" color="gray" size="lg" class="rounded-full nav-btn"
+          :class="{ 'active-btn': route.path === '/stats/all' }" @click="goTo('/stats/all')">
+          <UIcon name="i-heroicons-chart-bar" class="w-5 h-5 mr-2" />
+          Общая статистика
+        </UButton>
 
-      <!-- Моя статистика -->
-      <UButton
-        variant="soft"
-        color="gray"
-        size="lg"
-        class="rounded-full nav-btn"
-        :class="{ 'active-btn': route.path === '/stats' }"
-        @click="goTo('/stats')"
-      >
-        <UIcon name="i-heroicons-chart-pie" class="w-5 h-5 mr-2" />
-        Моя статистика
-      </UButton>
+        <!-- Моя статистика -->
+        <UButton variant="soft" color="gray" size="lg" class="rounded-full nav-btn"
+          :class="{ 'active-btn': route.path === '/stats' }" @click="goTo('/stats')">
+          <UIcon name="i-heroicons-chart-pie" class="w-5 h-5 mr-2" />
+          Моя статистика
+        </UButton>
+      </div>
     </div>
 
     <!-- Контент -->
@@ -85,8 +65,10 @@ const BackHome = () => router.push("/home")
 
 /* активная кнопка */
 .active-btn {
-  background-color: rgba(59, 130, 246, 0.2) !important; /* синий оттенок */
+  background-color: rgba(59, 130, 246, 0.2) !important;
+  /* синий оттенок */
   border: 1px solid rgba(59, 130, 246, 0.5);
-  color: #60a5fa !important; /* text-blue-400 */
+  color: #60a5fa !important;
+  /* text-blue-400 */
 }
 </style>

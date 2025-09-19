@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-900 p-6 text-gray-100">
+  <div class="min-h-screen p-6 text-gray-100">
     <!-- Заголовок -->
     <div class="text-center mb-10">
       <h1 class="text-3xl md:text-4xl font-bold mb-2">Общая статистика пользователей</h1>

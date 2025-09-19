@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-900 flex items-center justify-center p-6">
+  <div class="min-h-screen  flex items-center justify-center p-6">
     <div class="w-full max-w-2xl bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700">
       <h1 class="text-2xl font-bold text-white mb-6 text-center">Мой профиль</h1>
 
