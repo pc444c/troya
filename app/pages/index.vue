@@ -15,56 +15,60 @@
       </div>
 
       <!-- Форма -->
-      <UForm :state="form" @submit="submitForm" class=" flex flex-col gap-3">
-        <!-- Логин -->
-        <UFormGroup label="Логин" name="login" required>
-          <UInput
-            v-model="form.login"
-            
-            placeholder="Ваш логин"
-            icon="i-heroicons-user"
-            size="lg"
-            class="block rounded-md  bg-white/20 border-white/30 text-white "
-          />
-        </UFormGroup>
+    <UForm :state="form" @submit="submitForm" class="flex flex-col gap-3">
+  <!-- Логин -->
+  <UFormGroup label="Логин" name="login" required>
+    <UInput
+      v-model="form.login"
+      name="username"            
+      autocomplete="username"     
+      placeholder="Ваш логин"
+      icon="i-heroicons-user"
+      size="lg"
+      class="block rounded-md bg-white/20 border-white/30 text-white"
+    />
+  </UFormGroup>
 
-        <!-- Пароль -->
-        <UFormGroup label="Пароль" name="password" required>
-          <UInput
-            v-model="form.password"
-            :type="showPassword ? 'text' : 'password'"
-            placeholder="Ваш пароль"
-            icon="i-heroicons-key"
-            size="lg"
-            class="block backdrop-blur rounded-md  bg-white/20 border-white/30 text-white "
-          >
-            <template #trailing>
-              <UButton
-                variant="ghost"
-                color="neutral"
-                size="xs"
-                :icon="showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'"
-                @click="showPassword = !showPassword"
-                class="!p-1"
-              />
-            </template>
-          </UInput>
-        </UFormGroup>
-
-        <!-- Кнопка -->
+  <!-- Пароль -->
+  <UFormGroup label="Пароль" name="password" required>
+    <UInput
+      v-model="form.password"
+      name="current-password"    
+      autocomplete="current-password" 
+      :type="showPassword ? 'text' : 'password'"
+      placeholder="Ваш пароль"
+      icon="i-heroicons-key"
+      size="lg"
+      class="block rounded-md bg-white/20 border-white/30 text-white"
+    >
+      <template #trailing>
         <UButton
-          type="submit"
-          color="primary"
-          size="lg"
-          block
-          :loading="loading"
-          :disabled="loading"
-          icon="i-heroicons-arrow-right-on-rectangle"
-          class="!rounded-xl !py-3 font-semibold shadow-lg"
-        >
-          {{ loading ? "Загрузка..." : "Войти" }}
-        </UButton>
-      </UForm>
+          variant="ghost"
+          color="neutral"
+          size="xs"
+          :icon="showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'"
+          @click="showPassword = !showPassword"
+          class="!p-1"
+        />
+      </template>
+    </UInput>
+  </UFormGroup>
+
+  <!-- Кнопка -->
+  <UButton
+    type="submit"
+    color="primary"
+    size="lg"
+    block
+    :loading="loading"
+    :disabled="loading"
+    icon="i-heroicons-arrow-right-on-rectangle"
+    class="!rounded-xl !py-3 font-semibold shadow-lg"
+  >
+    {{ loading ? "Загрузка..." : "Войти" }}
+  </UButton>
+</UForm>
+
 
       <!-- Подсказка -->
       <p class="mt-6 text-xs text-gray-200 text-center">
