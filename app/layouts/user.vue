@@ -20,7 +20,18 @@
         <UIcon name="i-heroicons-plus" class="w-5 h-5 mr-2" />
         Добавить код
       </UButton>
-
+      <!--  -->
+      <UButton
+        variant="soft"
+        color="gray"
+        size="lg"
+        class="rounded-full nav-btn"
+        :class="{ 'active-btn': route.path === '/home/profile' }"
+        @click="goTo('/home/profile')"
+      >
+        <UIcon name="i-heroicons-cog" class="w-5 h-5 mr-2" />
+        Настройки
+      </UButton>
       <!-- Общая статистика -->
       <UButton
         variant="soft"

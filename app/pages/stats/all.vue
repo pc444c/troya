@@ -7,18 +7,22 @@
     </div>
     
     <!-- Карточки метрик -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-6xl mx-auto mb-6">
       <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-md text-center">
-        <div class="text-blue-400 text-2xl md:text-3xl font-bold">{{ totals.today }}</div>
+        <div class="text-blue-400 text-2xl md:text-3xl font-bold">{{ animatedTotals.today }}</div>
         <p class="text-gray-400 mt-1">Всего за сегодня</p>
       </div>
       <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-md text-center">
-        <div class="text-green-400 text-2xl md:text-3xl font-bold">{{ totals.week }}</div>
+        <div class="text-green-400 text-2xl md:text-3xl font-bold">{{ animatedTotals.week }}</div>
         <p class="text-gray-400 mt-1">Всего за неделю</p>
       </div>
       <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-md text-center">
-        <div class="text-purple-400 text-2xl md:text-3xl font-bold">{{ totals.month }}</div>
+        <div class="text-purple-400 text-2xl md:text-3xl font-bold">{{ animatedTotals.month }}</div>
         <p class="text-gray-400 mt-1">Всего за месяц</p>
+      </div>
+      <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-md text-center">
+        <div class="text-pink-400 text-2xl md:text-3xl font-bold">{{ animatedUserCount }}</div>
+        <p class="text-gray-400 mt-1">Всего пользователей</p>
       </div>
     </div>
 
@@ -60,14 +64,31 @@
                 :class="getMedalColor(idx)"
                 class="w-5 h-5"
               />
-              <span class="font-medium">{{ user.login }}</span>
+              <img
+                v-if="user.avatarUrl"
+                :src="user.avatarUrl"
+                alt="Аватар"
+                class="w-8 h-8 rounded-full object-cover"
+                loading="lazy"
+                @error="(e) => e.target.src='default-avatar.png'"
+              />
+              <UIcon v-else name="i-heroicons-user" class="w-6 h-6 text-gray-400"/>
+              <span>{{ user.login }}</span>
             </div>
             <span class="font-bold text-indigo-400">{{ user[activeTab] }}</span>
           </li>
         </ul>
       </div>
     </div>
-    <div class="my-8 text-center">
+
+    <!-- Поиск + обновление -->
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+      <UInput
+        v-model="searchQuery"
+        icon="i-heroicons-magnifying-glass"
+        placeholder="Поиск пользователя..."
+        class="w-full md:w-1/3 bg-gray-800 border-gray-600 rounded-xl text-white placeholder-gray-400"
+      />
       <UButton
         color="primary"
         size="lg"
@@ -79,6 +100,7 @@
         Обновить статистику
       </UButton>
     </div>
+
     <!-- Таблица пользователей -->
     <div class="max-w-6xl mx-auto bg-gray-800 rounded-lg p-6 border border-gray-700 shadow-md overflow-x-auto">
       <table class="w-full min-w-[600px] border-collapse text-gray-100">
@@ -116,14 +138,25 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-700">
-          <tr v-for="user in sortedUsers" :key="user.id" class="hover:bg-gray-700 transition-colors">
-            <td class="px-4 py-3 font-medium">{{ user.login }}</td>
+          <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-gray-700 transition-colors">
+            <td class="px-4 py-3 text-left flex items-center gap-2">
+              <img
+                v-if="user.avatarUrl"
+                :src="user.avatarUrl"
+                alt="Аватар"
+                class="w-8 h-8 rounded-full object-cover"
+                loading="lazy"
+                @error="(e) => e.target.src='default-avatar.png'"
+              />
+              <UIcon v-else name="i-heroicons-user" class="w-6 h-6 text-gray-400"/>
+              <span>{{ user.login }}</span>
+            </td>
             <td class="px-4 py-3 text-center font-semibold text-blue-400">{{ user.today }}</td>
             <td class="px-4 py-3 text-center font-semibold text-green-400">{{ user.week }}</td>
             <td class="px-4 py-3 text-center font-semibold text-purple-400">{{ user.month }}</td>
             <td class="px-4 py-3 text-center font-bold text-indigo-400">{{ user.total }}</td>
           </tr>
-          <tr v-if="usersStats.length === 0">
+          <tr v-if="filteredUsers.length === 0">
             <td colspan="5" class="text-center py-6 text-gray-500">
               Нет данных
             </td>
@@ -131,21 +164,20 @@
         </tbody>
       </table>
     </div>
-
-    <!-- Кнопка обновления -->
-    
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useToast } from '#imports'
+import gsap from 'gsap'
 
 definePageMeta({ layout: 'user' })
 
 const toast = useToast()
 const isLoading = ref(false)
 const activeTab = ref<'today' | 'week' | 'month'>('month')
+const searchQuery = ref("")
 
 const tabs = [
   { label: 'Сегодня', value: 'today', icon: 'i-heroicons-sun' },
@@ -156,6 +188,7 @@ const tabs = [
 type UserStats = {
   id: number
   login: string
+  avatarUrl: string
   today: number
   week: number
   month: number
@@ -163,7 +196,23 @@ type UserStats = {
 }
 
 const usersStats = ref<UserStats[]>([])
+
 const totals = ref({ today: 0, week: 0, month: 0 })
+const userCount = ref(0)
+
+// 🔢 Анимированные значения
+const animatedTotals = ref({ today: 0, week: 0, month: 0 })
+const animatedUserCount = ref(0)
+
+// функция анимации
+const animateValue = (target: any, key: string, newVal: number) => {
+  gsap.to(target, {
+    [key]: newVal,
+    duration: 1.2,
+    ease: "power1.out",
+    roundProps: key
+  })
+}
 
 const fetchStats = async () => {
   try {
@@ -174,17 +223,29 @@ const fetchStats = async () => {
     usersStats.value = (res.users || []).map((u: any) => ({
       id: u.id,
       login: u.login,
+      avatarUrl: u.avatarUrl || "",
       today: Number(u.today),
       week: Number(u.week),
       month: Number(u.month),
       total: Number(u.total)
     }))
 
-    totals.value = {
+    const newTotals = {
       today: usersStats.value.reduce((acc, u) => acc + u.today, 0),
       week: usersStats.value.reduce((acc, u) => acc + u.week, 0),
       month: usersStats.value.reduce((acc, u) => acc + u.month, 0)
     }
+
+    const newUserCount = usersStats.value.length
+
+    // запускаем анимацию
+    animateValue(animatedTotals.value, "today", newTotals.today)
+    animateValue(animatedTotals.value, "week", newTotals.week)
+    animateValue(animatedTotals.value, "month", newTotals.month)
+    animateValue(animatedUserCount, "value", newUserCount)
+
+    totals.value = newTotals
+    userCount.value = newUserCount
   } catch (err: any) {
     toast.add({ title: err.message || "Ошибка загрузки статистики", color: "error" })
   } finally {
@@ -222,20 +283,25 @@ const sortedUsers = computed(() => {
   })
 })
 
+const filteredUsers = computed(() => {
+  if (!searchQuery.value) return sortedUsers.value
+  return sortedUsers.value.filter(u =>
+    u.login.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+})
+
 const tabLabel = computed(() => {
   if (activeTab.value === 'today') return 'день'
   if (activeTab.value === 'week') return 'неделя'
   return 'месяц'
 })
 
-// ТОП-3 по выбранному периоду
 const topGroups = computed(() => {
   const key = activeTab.value
   const sorted = [...usersStats.value].sort((a, b) => b[key] - a[key])
   return [0, 1, 2].map(i => sorted.slice(i * 3, i * 3 + 3))
 })
 
-// Иконки медалей
 const getMedalIcon = (idx: number) => {
   if (idx === 0) return 'i-heroicons-trophy'
   if (idx === 1) return 'i-heroicons-star'

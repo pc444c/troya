@@ -67,6 +67,7 @@ export default defineEventHandler(async () => {
         return {
           id: u.id,
           login: u.login,
+            avatarUrl: u.avatarUrl || "", // <- добавили
           today,
           week,
           month,

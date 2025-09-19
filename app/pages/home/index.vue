@@ -1,11 +1,13 @@
 <template>
-  <div class="flex flex-col min-h-screen items-center justify-center bg-gradient-to-b  p-4">
+  <div class="flex flex-col min-h-screen items-center justify-center bg-gradient-to-b p-4">
     <UCard
-      class="w-full max-w-md backdrop-blur-xl bg-white/20 border border-white/30 shadow-xl rounded-2xl p-6"
+      class="ucard-success w-full max-w-md backdrop-blur-xl bg-white/20 border border-white/30 shadow-xl rounded-2xl p-6 transition-all duration-500"
     >
       <!-- Заголовок -->
       <div class="flex flex-col items-center gap-3 mb-6">
-        <div class="flex items-center justify-center w-14 h-14 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-md">
+        <div
+          class="flex items-center justify-center w-14 h-14 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-md"
+        >
           <UIcon name="i-heroicons-key" class="w-8 h-8 text-white" />
         </div>
         <h1 class="text-2xl font-bold text-white">Добавление кода</h1>
@@ -13,12 +15,14 @@
 
       <!-- Логин -->
       <div class="text-center mb-3 text-gray-200">
-        Вы вошли как: <span class="font-semibold text-xl text-white">{{ userLogin }}</span>
+        Вы вошли как:
+        <span class="font-semibold text-xl text-white">{{ userLogin }}</span>
       </div>
 
       <!-- Статистика -->
       <div class="text-center mb-6 text-sm text-gray-300">
-        Сегодня: <span class="text-white font-medium">{{ todayCount }}</span> |
+        Сегодня:
+        <span class="text-white font-medium">{{ todayCount }}</span> |
         Всего: <span class="text-white font-medium">{{ totalCount }}</span>
       </div>
 
@@ -56,6 +60,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue"
 import { useToast } from "#imports"
+import confetti from "canvas-confetti" // 🎉 библиотека для конфетти
 
 definePageMeta({ layout: "user" })
 
@@ -65,13 +70,13 @@ const userLogin = ref<string>("...")
 const code = ref("")
 const todayCount = ref(0)
 const totalCount = ref(0)
+
 const onInput = (e: Event) => {
   const input = e.target as HTMLInputElement
   // Убираем все, кроме цифр, и обрезаем до 6 символов
   input.value = input.value.replace(/\D/g, "").slice(0, 6)
   code.value = input.value
 }
-
 
 const loadCounts = async () => {
   try {
@@ -94,8 +99,8 @@ onMounted(async () => {
 })
 
 const submitCode = async () => {
-  if (!code.value || code.value.length < 4 || !/^\d+$/.test(code.value) || code.value.length > 6 ){
-    toast.add({ title: "Введите код коректно", color: "error" })
+  if (!code.value || code.value.length < 4 || !/^\d+$/.test(code.value) || code.value.length > 6) {
+    toast.add({ title: "Введите код корректно", color: "error" })
     return
   }
 
@@ -108,6 +113,22 @@ const submitCode = async () => {
     toast.add({ title: res.message, color: "primary" })
     code.value = ""
     await loadCounts()
+
+    // 🎉 Конфетти
+    confetti({
+      particleCount: 120,
+      spread: 80,
+      origin: { y: 0.6 },
+    })
+
+    // 🌟 Подсветка карточки
+    const card = document.querySelector(".ucard-success")
+    if (card) {
+      card.classList.add("ring-4", "ring-green-400", "shadow-green-500/50")
+      setTimeout(() => {
+        card.classList.remove("ring-4", "ring-green-400", "shadow-green-500/50")
+      }, 1200)
+    }
   } catch (err: any) {
     toast.add({ title: err.message || "Ошибка при сохранении кода", color: "error" })
   }
