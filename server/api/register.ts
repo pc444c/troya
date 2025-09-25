@@ -25,7 +25,8 @@ export default defineEventHandler(async (event) => {
   const [newUser] = await db.insert(users)
     .values({ login, passwordHash })
     .returning();
-//гитхаб
+
+    
   // Сохраняем куки
   setCookie(event, "userId", String(newUser.id), {
     httpOnly: true,
